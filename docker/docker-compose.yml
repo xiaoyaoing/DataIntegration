@@ -1,0 +1,40 @@
+version: '3.3'
+# 其实他们位于同一个docker 网络, 除了后端其他不开端口映射也可以运行的
+services:
+  kafka:
+    container_name: kafka
+    image: 'bitnami/kafka:latest'
+    restart: always
+    ports:
+      - '9094:9094'
+    expose:
+      - "9092"
+    command:
+      - 'sh'
+      - '-c'
+      - '/opt/bitnami/scripts/kafka/setup.sh && kafka-storage.sh format --config "$${KAFKA_CONF_FILE}" --cluster-id "lkorDA4qT6W1K_dk0LHvtg" --ignore-formatted  && /opt/bitnami/scripts/kafka/run.sh' # Kraft specific initialise
+    environment:
+    # 举例
+    # kafka 始终位于 docker 容器中, 创建 topic 时, --bootstrap-server 指定为 kafka:9092
+    # 若与 kafka 位于同一个 docker 网络, 指定 kafka 的 url 为 kafka:9092(kafka 是容器名), 
+    # 与与 kafka 不在同一个网络, 指定 kafka 的 url 为 宿主机ip:9094
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_BROKER_ID=1
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@127.0.0.1:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT1:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LOG_DIRS=/tmp/logs
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,PLAINTEXT1://:9094,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,PLAINTEXT1://172.17.0.1:9094
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+  # 在 kafka 启动后做一些配置
+  kafkaset:
+    container_name: kafkaset
+    image: 'bitnami/kafka:latest'
+    depends_on:
+      - kafka
+    restart: "no"
+    entrypoint: ["sh", "-c","/opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092  --create  --topic log && /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092  --create  --topic recommender && /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092  --create  --topic report"]
+ 
