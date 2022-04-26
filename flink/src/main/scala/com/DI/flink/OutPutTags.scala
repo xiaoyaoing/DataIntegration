@@ -1,14 +1,16 @@
 package com.DI.flink
 
+import com.DI.flink.serializer.{StringToDouble, StringToInt}
 import org.apache.flink.streaming.api.scala.OutputTag
 import org.apache.flink.streaming.api.scala._
-import org.json4s.JValue
+import org.json4s.{DefaultFormats, Formats, JValue}
 /**
  * @author Rikka
  * @date 2022-04-26 01:35:00
  * @description
  */
 object OutPutTags {
+
   lazy val shopStream = new OutputTag[JValue]("shop")
   lazy val contractStream = new OutputTag[JValue]("contract")
   lazy val dsfStream = new OutputTag[JValue]("dsf")
