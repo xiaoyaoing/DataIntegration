@@ -1,0 +1,137 @@
+# 共有8个级别，按照从低到高为：all < trace < debug < info < warn < error < fatal < off。
+configuration:
+  status: warn
+  monitorinterval: 30
+  properties: # 定义全局变量
+    property: # 缺省配置（用于开发环境）。其他环境需要在vm参数中指定，如下：
+      #测试：-dlog.level.console=warn -dlog.level.xjj=trace
+      #生产：-dlog.level.console=warn -dlog.level.xjj=info
+      - name: log.level.console
+        value: info
+      - name: log.path
+        value: log
+      - name: project.name
+        value: opendoc
+      - name: log.pattern
+        value: "%d{yyyy-MM-dd hh:mm:ss.sss} %highlight{-%5p}{error=bright red, warn=bright yellow, info=bright green, debug=bright cyan, trace=bright white} ${pid:-} %style{[%15.15t]}{magenta} %style{%-30.30c{1.}}{cyan} : %m%n"
+  appenders:
+    console:  #输出到控制台
+      name: console
+      target: system_out
+      patternlayout:
+        pattern: ${log.pattern}
+    #   启动日志
+    rollingfile:
+      - name: rolling_file
+        filename: ${log.path}/${project.name}.log
+        filepattern: "${log.path}/historyrunlog/$${date:yyyy-MM}/${project.name}-%d{yyyy-MM-dd}-%i.log.gz"
+        patternlayout:
+          pattern: ${log.pattern}
+        filters:
+          #        一定要先去除不接受的日志级别，然后获取需要接受的日志级别
+          thresholdfilter:
+            - level: error
+              onmatch: deny
+              onmismatch: neutral
+            - level: info
+              onmatch: accept
+              onmismatch: deny
+        policies:
+          timebasedtriggeringpolicy:  # 按天分类
+            modulate: true
+            interval: 1
+        defaultrolloverstrategy:     # 文件最多100个
+          max: 1
+      #   平台日志
+      - name: platform_rolling_file
+        ignoreexceptions: false
+        filename: ${log.path}/platform/${project.name}_platform.log
+        filepattern: "${log.path}/platform/$${date:yyyy-MM}/${project.name}-%d{yyyy-MM-dd}-%i.log.gz"
+        patternlayout:
+          pattern: ${log.pattern}
+        policies:
+          timebasedtriggeringpolicy:  # 按天分类
+            modulate: true
+            interval: 1
+        defaultrolloverstrategy:     # 文件最多100个
+          max: 1
+      #   业务日志
+      - name: business_rolling_file
+        ignoreexceptions: false
+        filename: ${log.path}/business/${project.name}_business.log
+        filepattern: "${log.path}/business/$${date:yyyy-MM}/${project.name}-%d{yyyy-MM-dd}-%i.log.gz"
+        patternlayout:
+          pattern: ${log.pattern}
+        policies:
+          timebasedtriggeringpolicy:  # 按天分类
+            modulate: true
+            interval: 1
+        defaultrolloverstrategy:     # 文件最多100个
+          max: 1
+      #   错误日志
+      - name: exception_rolling_file
+        ignoreexceptions: false
+        filename: ${log.path}/exception/${project.name}_exception.log
+        filepattern: "${log.path}/exception/$${date:yyyy-MM}/${project.name}-%d{yyyy-MM-dd}-%i.log.gz"
+        thresholdfilter:
+          level: error
+          onmatch: accept
+          onmismatch: deny
+        patternlayout:
+          pattern: ${log.pattern}
+        policies:
+          timebasedtriggeringpolicy:  # 按天分类
+            modulate: true
+            interval: 1
+        defaultrolloverstrategy:     # 文件最多100个
+          max: 1
+      #   db 日志
+      - name: db_rolling_file
+        ignoreexceptions: false
+        filename: ${log.path}/db/${project.name}_db.log
+        filepattern: "${log.path}/db/$${date:yyyy-MM}/${project.name}-%d{yyyy-MM-dd}-%i.log.gz"
+        patternlayout:
+          pattern: ${log.pattern}
+        policies:
+          timebasedtriggeringpolicy:  # 按天分类
+            modulate: true
+            interval: 1
+        defaultrolloverstrategy:     # 文件最多100个
+          max: 1
+  loggers:
+    root:
+      level: info
+      appenderref:
+        - ref: console
+        - ref: rolling_file
+        - ref: exception_rolling_file
+    logger:
+      - name: platform
+        level: info
+        additivity: false
+        appenderref:
+          - ref: console
+          - ref: platform_rolling_file
+      - name: business
+        level: info
+        additivity: false
+        appenderref:
+          - ref: business_rolling_file
+      - name: exception
+        level: debug
+        additivity: true
+        appenderref:
+          - ref: exception_rolling_file
+      - name: db
+        level: info
+        additivity: false
+        appenderref:
+          - ref: db_rolling_file
+#    监听具体包下面的日志
+#    logger: # 为com.xjj包配置特殊的log级别，方便调试
+#      - name: com.xjj
+#        additivity: false
+#        level: ${sys:log.level.xjj}
+#        appenderref:
+#          - ref: console
+#          - ref: rolling_file

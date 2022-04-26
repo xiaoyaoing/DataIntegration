@@ -1,10 +1,11 @@
 package com.DI.flink
 
 import com.DI.flink.OutPutTags.{contractStream, djkStream, dsfStream, duebillStream, etcStream, grwyStream, gzdfStream, huanbStream, huanxStream, saStream, sbybStream, sdrqStream, shopStream, sjyhStream}
+import com.DI.flink.Main.logger
 import com.DI.flink.serializer.{StringToDouble, StringToInt}
 import org.apache.flink.streaming.api.functions.ProcessFunction
 import org.apache.flink.util.Collector
-import org.json4s.{DefaultFormats, Formats, JValue}
+import org.json4s.{DefaultFormats, Formats, JNothing, JValue}
 
 /**
  * @author Rikka
@@ -14,9 +15,13 @@ import org.json4s.{DefaultFormats, Formats, JValue}
 
 
 class MdSplitProcessFunction extends ProcessFunction[JValue, JValue] {
-
-  implicit val formats: Formats = DefaultFormats + StringToInt + StringToDouble
+  var count = 0
   override def processElement(i: JValue, context: ProcessFunction[JValue, JValue]#Context, collector: Collector[JValue]): Unit = {
+    logger.info("\n"+"="*100+"\n正在处理第 %d 条\n".format(count)+"="*100)
+    count+=1
+    implicit val formats: Formats = DefaultFormats + StringToInt + StringToDouble
+    if(i.equals(JNothing))
+      return
     (i \ "eventType").extractOpt[String] match {
       case Some(value) => value match {
         case "shop" => context.output(shopStream, i)
