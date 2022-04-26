@@ -1,10 +1,25 @@
 version: '3.3'
 # 其实他们位于同一个docker 网络, 除了后端其他不开端口映射也可以运行的
 services:
+  clickhouse-server:
+      container_name: clickhouse
+      ulimits:
+          nofile:
+              soft: 262144
+              hard: 262144
+      ports:
+          - '18123:8123'
+          - '19000:9000'
+          - '19009:9009'
+      image: yandex/clickhouse-server
+      volumes:
+        - "./config/clickhouse-server:/etc/clickhouse-server"
   kafka:
     container_name: kafka
     image: 'bitnami/kafka:latest'
     restart: always
+    volumes:
+      - "./data:/data/txt"
     ports:
       - '9094:9094'
     expose:
@@ -38,3 +53,24 @@ services:
     restart: "no"
     entrypoint: ["sh", "-c","/opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092  --create  --topic test"]
  
+  jobmanager:
+    image: flink
+    expose:
+      - "6123"
+    ports:
+      - "8081:8081"
+    command: jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+  taskmanager:
+    image: flink
+    expose:
+      - "6121"
+      - "6122"
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    links:
+      - "jobmanager:jobmanager"
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
