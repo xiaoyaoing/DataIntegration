@@ -36,5 +36,5 @@ services:
     depends_on:
       - kafka
     restart: "no"
-    entrypoint: ["sh", "-c","/opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092  --create  --topic log && /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092  --create  --topic recommender && /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092  --create  --topic report"]
+    entrypoint: ["sh", "-c","/opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092  --create  --topic test"]
  
