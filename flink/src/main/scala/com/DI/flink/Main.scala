@@ -80,8 +80,8 @@ object Main {
     env.getCheckpointConfig.setTolerableCheckpointFailureNumber(1)
 
     val props = new Properties()
-    //    props.put("bootstrap.servers", "kafka:9092") // 提交至 flink
-    props.put("bootstrap.servers", "127.0.0.1:9094") // IDEA 里面跑, 其他部署在 docker 容器
+    props.put("bootstrap.servers", "kafka:9092") // 提交至 flink
+    //    props.put("bootstrap.servers", "127.0.0.1:9094") // IDEA 里面跑, 其他部署在 docker 容器
     props.put("auto.offset.reset", "earliest")
     props.put("group.id", "test_flink")
     val source: KafkaSource[String] = KafkaSource.builder[String].setBootstrapServers(props.getProperty("bootstrap.servers")).setTopics("test").setGroupId("my-group").setStartingOffsets(OffsetsInitializer.committedOffsets(OffsetResetStrategy.valueOf(
@@ -91,8 +91,8 @@ object Main {
     ))).setValueOnlyDeserializer(new SimpleStringSchema).build
 
     val value: DataStream[String] = env.fromSource(source, WatermarkStrategy.noWatermarks[String], "Kafka Source")
-    val CkJdbcUrl = "jdbc:clickhouse://127.0.0.1:18123/dm" // IDEA 里跑, 其他部署在 docker
-    //        val CkdbcUrl = "jdbc:clickhouse://clickhouse:8123/dm" // 提交至 flink
+    //    val CkJdbcUrl = "jdbc:clickhouse://127.0.0.1:18123/dm" // IDEA 里跑, 其他部署在 docker
+    val CkJdbcUrl = "jdbc:clickhouse://clickhouse:8123/dm" // 提交至 flink
 
 
     val value1 = value.map(s => JsonMethods.parseOpt(s) match {
