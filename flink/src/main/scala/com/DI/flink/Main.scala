@@ -80,8 +80,8 @@ object Main {
     env.getCheckpointConfig.setTolerableCheckpointFailureNumber(1)
 
     val props = new Properties()
-    props.put("bootstrap.servers", "kafka:9092") // 提交至 flink
-    //    props.put("bootstrap.servers", "127.0.0.1:9094") // IDEA 里面跑, 其他部署在 docker 容器
+    //    props.put("bootstrap.servers", "kafka:9092") // 提交至 flink
+    props.put("bootstrap.servers", "127.0.0.1:9094") // IDEA 里面跑, 其他部署在 docker 容器
     props.put("auto.offset.reset", "earliest")
     props.put("group.id", "test_flink")
     val source: KafkaSource[String] = KafkaSource.builder[String].setBootstrapServers(props.getProperty("bootstrap.servers")).setTopics("test").setGroupId("my-group").setStartingOffsets(OffsetsInitializer.committedOffsets(OffsetResetStrategy.valueOf(
@@ -91,8 +91,8 @@ object Main {
     ))).setValueOnlyDeserializer(new SimpleStringSchema).build
 
     val value: DataStream[String] = env.fromSource(source, WatermarkStrategy.noWatermarks[String], "Kafka Source")
-//    val CkJdbcUrl = "jdbc:clickhouse://127.0.0.1:18123/dm" // IDEA 里跑, 其他部署在 docker
-        val CkJdbcUrl = "jdbc:clickhouse://clickhouse:8123/dm" // 提交至 flink
+    val CkJdbcUrl = "jdbc:clickhouse://127.0.0.1:18123/dm" // IDEA 里跑, 其他部署在 docker
+    //        val CkdbcUrl = "jdbc:clickhouse://clickhouse:8123/dm" // 提交至 flink
 
 
     val value1 = value.map(s => JsonMethods.parseOpt(s) match {
@@ -107,20 +107,20 @@ object Main {
       sideoutList.add(value1.getSideOutput(s))
     })
     // case class 我不知道怎么通过类名反射, 也不知道怎么能把他存表, 只能全写出来了
-    sideoutList.get(0).map(new MapFuncionImp[Shop]).addSink(getSink[Shop](CkJdbcUrl, 500))
-    sideoutList.get(1).map(new MapFuncionImp[Contract]).addSink(getSink[Contract](CkJdbcUrl, 500))
-    sideoutList.get(2).map(new MapFuncionImp[Djk]).addSink(getSink[Djk](CkJdbcUrl, 500))
-    sideoutList.get(3).map(new MapFuncionImp[Dsf]).addSink(getSink[Dsf](CkJdbcUrl, 500))
-    sideoutList.get(4).map(new MapFuncionImp[Duebill]).addSink(getSink[Duebill](CkJdbcUrl, 500))
-    sideoutList.get(5).map(new MapFuncionImp[Etc]).addSink(getSink[Etc](CkJdbcUrl, 500))
-    sideoutList.get(6).map(new MapFuncionImp[Grwy]).addSink(getSink[Grwy](CkJdbcUrl, 500))
-    sideoutList.get(7).map(new MapFuncionImp[Gzdf]).addSink(getSink[Gzdf](CkJdbcUrl, 500))
-    sideoutList.get(8).map(new MapFuncionImp[Huanb]).addSink(getSink[Huanb](CkJdbcUrl, 500))
-    sideoutList.get(9).map(new MapFuncionImp[Huanx]).addSink(getSink[Huanx](CkJdbcUrl, 500))
-    sideoutList.get(10).map(new MapFuncionImp[Sa]).addSink(getSink[Sa](CkJdbcUrl, 500))
-    sideoutList.get(11).map(new MapFuncionImp[Sbyb]).addSink(getSink[Sbyb](CkJdbcUrl, 500))
-    sideoutList.get(12).map(new MapFuncionImp[Sdrq]).addSink(getSink[Sdrq](CkJdbcUrl, 500))
-    sideoutList.get(13).map(new MapFuncionImp[Sjyh]).addSink(getSink[Sjyh](CkJdbcUrl, 500))
+    sideoutList.get(0).map(new MapFuncionImp[Shop]).addSink(getSink[Shop](CkJdbcUrl, 2000))
+    sideoutList.get(1).map(new MapFuncionImp[Contract]).addSink(getSink[Contract](CkJdbcUrl, 2000))
+    sideoutList.get(2).map(new MapFuncionImp[Djk]).addSink(getSink[Djk](CkJdbcUrl, 2000))
+    sideoutList.get(3).map(new MapFuncionImp[Dsf]).addSink(getSink[Dsf](CkJdbcUrl, 2000))
+    sideoutList.get(4).map(new MapFuncionImp[Duebill]).addSink(getSink[Duebill](CkJdbcUrl, 2000))
+    sideoutList.get(5).map(new MapFuncionImp[Etc]).addSink(getSink[Etc](CkJdbcUrl, 2000))
+    sideoutList.get(6).map(new MapFuncionImp[Grwy]).addSink(getSink[Grwy](CkJdbcUrl, 2000))
+    sideoutList.get(7).map(new MapFuncionImp[Gzdf]).addSink(getSink[Gzdf](CkJdbcUrl, 2000))
+    sideoutList.get(8).map(new MapFuncionImp[Huanb]).addSink(getSink[Huanb](CkJdbcUrl, 2000))
+    sideoutList.get(9).map(new MapFuncionImp[Huanx]).addSink(getSink[Huanx](CkJdbcUrl, 2000))
+    sideoutList.get(10).map(new MapFuncionImp[Sa]).addSink(getSink[Sa](CkJdbcUrl, 2000))
+    sideoutList.get(11).map(new MapFuncionImp[Sbyb]).addSink(getSink[Sbyb](CkJdbcUrl, 2000))
+    sideoutList.get(12).map(new MapFuncionImp[Sdrq]).addSink(getSink[Sdrq](CkJdbcUrl, 2000))
+    sideoutList.get(13).map(new MapFuncionImp[Sjyh]).addSink(getSink[Sjyh](CkJdbcUrl, 2000))
 
     env.execute("Flink Streaming Java API Skeleton")
   }
